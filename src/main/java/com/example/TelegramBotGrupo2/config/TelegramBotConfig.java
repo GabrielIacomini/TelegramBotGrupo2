@@ -1,5 +1,6 @@
-package com.example.TelegramBotGrupo2.service;
+package com.example.TelegramBotGrupo2.config;
 
+import com.example.TelegramBotGrupo2.service.TelegramBoot;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

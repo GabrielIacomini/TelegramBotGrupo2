@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AgregadorProxy {
@@ -21,8 +23,12 @@ public class AgregadorProxy {
         this.agregadorRetrofitClient = retrofit.create(AgregadorRetrofitClient.class);
     }
 
-    public List<HechoDTO> getHechos(String nombreColeccion) throws Exception {
-        return agregadorRetrofitClient.getHechosDeColeccion(nombreColeccion).execute().body();
+    public List<HechoDTO> getHechos(String nombreColeccion) {
+        try {
+            return agregadorRetrofitClient.getHechosDeColeccion(nombreColeccion).execute().body();
+        } catch (Exception e) {
+            return  new ArrayList<>();
+        }
     }
 
 }
