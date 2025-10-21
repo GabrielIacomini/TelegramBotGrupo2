@@ -1,6 +1,7 @@
 package com.example.TelegramBotGrupo2.clients;
 
 import com.example.TelegramBotGrupo2.dtos.HechoDTO;
+import com.example.TelegramBotGrupo2.dtos.SolicitudDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -8,49 +9,46 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FuenteProxy {
+public class SolicitudProxy {
 
-    private final FuenteRetrofitClient retrofitClient;
+    private final SolicitudRetrofitClient retrofitClient;
 
-    public FuenteProxy(String baseUrl, ObjectMapper objectMapper) {
+    public SolicitudProxy(String baseUrl, ObjectMapper objectMapper) {
 
         var retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(JacksonConverterFactory.create(objectMapper))
                 .build();
 
-        this.retrofitClient = retrofit.create(FuenteRetrofitClient.class);
+        this.retrofitClient = retrofit.create(SolicitudRetrofitClient.class);
     }
 
-    public HechoDTO postHecho(HechoDTO hecho) {
+    public SolicitudDto patchSolicitud(SolicitudDto solic) {
         try {
-            return retrofitClient.postHecho(hecho).execute().body();
+            return retrofitClient.actualizarSolicitud(solic).execute().body();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public HechoDTO getHecho(String hechoId) {
+    public SolicitudDto postSolicitud(SolicitudDto solic) {
         try {
-            return retrofitClient.getHecho(hechoId).execute().body();
+            return retrofitClient.agregarSolicitud(solic).execute().body();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public List<String> getPdis(String hechoId)  {
+    public SolicitudDto getSolicitud(int id) {
         try {
-            var response = retrofitClient.getPdis(hechoId).execute().body();
-            if (response.size() == 0) {
-                return new ArrayList<>();
-            }
-            return response.get(0).pdiIds;
+            return retrofitClient.consultarSolicitud(id).execute().body();
         } catch (Exception e) {
             e.printStackTrace();
-            return  new ArrayList<>();
+            return null;
         }
     }
+
 
 }

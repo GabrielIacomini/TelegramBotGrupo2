@@ -27,6 +27,7 @@ public class AgregadorProxy {
         try {
             return agregadorRetrofitClient.getHechosDeColeccion(nombreColeccion).execute().body();
         } catch (Exception e) {
+            e.printStackTrace();
             return  new ArrayList<>();
         }
     }

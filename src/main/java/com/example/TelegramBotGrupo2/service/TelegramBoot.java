@@ -1,6 +1,9 @@
 package com.example.TelegramBotGrupo2.service;
 
+import com.example.TelegramBotGrupo2.Enums.EstadoSolicitudBorradoEnum;
 import com.example.TelegramBotGrupo2.clients.AgregadorProxy;
+import com.example.TelegramBotGrupo2.clients.SolicitudProxy;
+import com.example.TelegramBotGrupo2.dtos.SolicitudDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +29,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Component
@@ -98,21 +102,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
                         enviarMensaje(chatId, "📄 *Hecho:*\n\n" + hechoAString((hecho)));
 
                         String mensajePdis = pdisDeHecho.stream()
-                                .map(p -> String.format("""
-                                            🆔 %s
-                                            📍 %s
-                                            📘 %s
-                                            🏷️ Categoría: %s
-                                            📅 %s
-                                            🌐: %s
-                                            """,
-                                        p.getId(),
-                                        p.getLugar(),
-                                        p.getContenido(),
-                                        p.getDescripcion(),
-                                        p.getMomento() != null ? p.getMomento().toString().replace('T', ' ') : "Sin fecha",
-                                        p.getUrlImagen()
-                                ))
+                                .map(p -> pdiAString(p))
                                 .reduce("", (a, b) -> a + "\n" + b);
 
                         enviarMensaje(chatId, "📄 *Pdis del hecho " + hechoId + ":*\n\n" + mensajePdis);
@@ -147,11 +137,58 @@ public class TelegramBoot extends TelegramLongPollingBot {
                     break;
 
                 case "/solicitudborrado":
-                    enviarMensaje(chatId, "🗑️ Crea una solicitud de borrado de un hecho o elemento.\n\nEjemplo:\n`/solicitudborrado <id_hecho>`");
+                    String hechoId2 = partes[1];
+                    String estadoString = partes[2];
+                    String desc = messageTextReceived.substring(messageTextReceived.indexOf(' ')+1);
+                    desc = desc.substring(desc.indexOf(' ')+1);
+                    desc = desc.substring(desc.indexOf(' ')+1);
+
+                    EstadoSolicitudBorradoEnum estadoEnum = stringAEstadoSolicitud(estadoString);
+                    if (estadoEnum == null) {
+                        enviarMensaje(chatId, "❌ Estado invalido: " + estadoString);
+                        return;
+                    }
+                    SolicitudDto nuevaSolicitud = new SolicitudDto(null, desc, estadoEnum, hechoId2);
+                    var api = solicitudProxy(objectMapper);
+                    var solicitudCreada = api.postSolicitud(nuevaSolicitud);
+                    if (solicitudCreada == null) {
+                        enviarMensaje(chatId, "❌ Ocurrió un error dando de alta el hecho");
+                    } else {
+                        enviarMensaje(chatId, "➕ Dada de alta la solicitud:\n\n" + solicitudAString(solicitudCreada));
+                    }
+
+                    //enviarMensaje(chatId, "🗑️ Crea una solicitud de borrado de un hecho o elemento.\n\nEjemplo:\n`/solicitudborrado <id_hecho>`");
                     break;
 
                 case "/cambiarestadosolicitud":
-                    enviarMensaje(chatId, "⚙️ Permite cambiar el estado de una solicitud de borrado.\n\nEjemplo:\n`/cambiarestadosolicitud <id_solicitud> <nuevo_estado>`");
+                    try {
+                        String solicitudId = partes[1];
+                        String nuevoEstado = partes[2];
+                        EstadoSolicitudBorradoEnum nuevoEstadoEnum = stringAEstadoSolicitud(nuevoEstado);
+                        if (nuevoEstadoEnum == null) {
+                            enviarMensaje(chatId, "❌ Estado invalido: " + nuevoEstado);
+                            return;
+                        }
+
+                        var solicitudes = solicitudProxy(objectMapper);
+
+                        var solicitud = solicitudes.getSolicitud(Integer.parseInt(solicitudId));
+                        if (solicitud == null) {
+                            enviarMensaje(chatId, "❌ Ocurrió un error cambiando el estado de la solicitud");
+                            return;
+                        }
+                        solicitud.setEstado(nuevoEstadoEnum);
+                        var retorno = solicitudes.patchSolicitud(solicitud);
+                        if (retorno == null) {
+                            enviarMensaje(chatId, "❌ Ocurrió un error cambiando el estado de la solicitud");
+                            return;
+                        }
+                        enviarMensaje(chatId, "✅ Se cambio el estado de la solicitud "+solicitudId+ " a "+nuevoEstado);
+                    } catch (Exception e) {
+                        enviarMensaje(chatId, "❌ Ocurrió un error cambiando el estado de la solicitud");
+                        e.printStackTrace();
+                    }
+                    //enviarMensaje(chatId, "⚙️ Permite cambiar el estado de una solicitud de borrado.\n\nEjemplo:\n`/cambiarestadosolicitud <id_solicitud> <nuevo_estado>`");
                     break;
 
                 default:
@@ -160,6 +197,42 @@ public class TelegramBoot extends TelegramLongPollingBot {
             }
 
         }
+    }
+
+    private EstadoSolicitudBorradoEnum stringAEstadoSolicitud(String estadoString) {
+        EstadoSolicitudBorradoEnum estadoEnum = null;
+        switch (estadoString.toUpperCase(Locale.ROOT)) {
+            case "CREADA":
+                estadoEnum = EstadoSolicitudBorradoEnum.CREADA;
+                break;
+            case "VALIDADA":
+                estadoEnum = EstadoSolicitudBorradoEnum.VALIDADA;
+                break;
+            case "EN_DISCUCION":
+                estadoEnum = EstadoSolicitudBorradoEnum.EN_DISCUCION;
+                break;
+            case "ACEPTADA":
+                estadoEnum = EstadoSolicitudBorradoEnum.ACEPTADA;
+                break;
+            case "RECHAZADA":
+                estadoEnum = EstadoSolicitudBorradoEnum.RECHAZADA;
+                break;
+        }
+        return estadoEnum;
+    }
+
+    private String solicitudAString(SolicitudDto h) {
+        return String.format("""
+                                            🆔 %s
+                                            🪪 %s
+                                            📘 %s
+                                            🟢 %s
+                                            """,
+                h.getId(),
+                h.getHechoId(),
+                h.getDescripcion(),
+                h.getEstado().toString()
+        );
     }
 
     private String hechoAString(HechoDTO h) {
@@ -177,6 +250,31 @@ public class TelegramBoot extends TelegramLongPollingBot {
                 h.getFecha() != null ? h.getFecha().toString().replace('T', ' ') : "Sin fecha",
                 h.getCategoria() != null ? h.getCategoria() : "Sin categoría",
                 h.getOrigen() != null ? h.getOrigen() : "Sin origen"
+        );
+    }
+
+    private String pdiAString(PdIDTO p) {
+        return String.format("""
+                                            🆔 %s
+                                            📍 %s
+                                            📘 %s
+                                            🏷️ Categoría: %s
+                                            📅 %s
+                                            🌐: %s
+                                            """,
+                p.getId(),
+                p.getLugar(),
+                p.getContenido(),
+                p.getDescripcion(),
+                p.getMomento() != null ? p.getMomento().toString().replace('T', ' ') : "Sin fecha",
+                p.getUrlImagen()
+        );
+    }
+
+    private SolicitudProxy solicitudProxy(ObjectMapper objectMapper) {
+        return new SolicitudProxy(
+                "https://two025-tp-dds-solicitudes.onrender.com",
+                objectMapper
         );
     }
 
