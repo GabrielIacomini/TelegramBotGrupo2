@@ -80,6 +80,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
                         enviarListaDeComandos(chatId);
                     } catch (Exception e) {
                         enviarMensaje(chatId, "❌ Ocurrió un error al obtener los hechos de la colección `" + coleccionId + "`");
+                        enviarListaDeComandos(chatId);
                         e.printStackTrace();
                     }
                     break;
@@ -94,6 +95,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
                         HechoDTO hecho = fuenteProxy.getHecho(hechoId);
                         if (hecho == null) {
                             enviarMensaje(chatId, "❌ No se encontro informacion del hecho: " + hechoId);
+                            enviarListaDeComandos(chatId);
                             return;
                         }
                         List<String> pdiIdsDeHecho = fuenteProxy.getPdis(hechoId);
@@ -106,8 +108,10 @@ public class TelegramBoot extends TelegramLongPollingBot {
                                 .reduce("", (a, b) -> a + "\n" + b);
 
                         enviarMensaje(chatId, "📄 *Pdis del hecho " + hechoId + ":*\n\n" + mensajePdis);
+                        enviarListaDeComandos(chatId);
                     } catch (Exception e) {
                         enviarMensaje(chatId, "❌ Ocurrió un error al obtener la informacion del hecho `" + hechoId + "`");
+                        enviarListaDeComandos(chatId);
                         e.printStackTrace();
                     }
 
