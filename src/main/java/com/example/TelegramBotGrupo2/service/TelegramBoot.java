@@ -137,7 +137,24 @@ public class TelegramBoot extends TelegramLongPollingBot {
                     break;
 
                 case "/agregarpdihecho":
-                    enviarMensaje(chatId, "📍 Agregá un PDI (Punto de Interés) a un hecho.\n\nEjemplo:\n`/agregarpdihecho <id_hecho> <id_pdi>`");
+                    enviarMensaje(chatId, "📍 Agregá un PDI (Punto de Interés) a un hecho.\n\nEjemplo:\n`/agregarpdihecho <id_hecho> <descripcion>" +
+                            "<lugar> <momento> <contenido> <url>`");
+                    String hechoId3 = partes[1];
+                    String descripcion = partes[2];//agregar logica para recibir una frase
+                    String lugar = partes[3];
+                    String momento = partes[4];
+                    String contenido = partes[5];
+                    String url = partes[6];
+                    PdIDTO nuevoPDI = new PdIDTO(null, hechoId3, descripcion, lugar, momento, contenido, url, null);
+                    var apiFuente = fuenteProxy(objectMapper);
+                    var pdiCreado = apiFuente.postPdI(hechoId3, nuevoPDI);
+
+                    if (pdiCreado == null) {
+                        enviarMensaje(chatId, "❌ Ocurrió un error dando de alta el PdI");
+                    } else {
+                        enviarMensaje(chatId, "➕ Dada de alta el PdI");
+                        //enviarMensaje(chatId, "➕ Dada de alta el PdI:\n\n" + solicitudAString(pdiCreado));
+                    }
                     break;
 
                 case "/solicitudborrado":

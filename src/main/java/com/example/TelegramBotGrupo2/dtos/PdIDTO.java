@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -16,7 +14,7 @@ public class PdIDTO {
     private String hechoId;
     private String descripcion;
     private String lugar;
-    private LocalDateTime momento;
+    private String momento;
     private String contenido;
     private String urlImagen;
     private List<String> etiquetas;

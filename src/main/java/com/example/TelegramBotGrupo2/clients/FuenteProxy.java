@@ -1,6 +1,7 @@
 package com.example.TelegramBotGrupo2.clients;
 
 import com.example.TelegramBotGrupo2.dtos.HechoDTO;
+import com.example.TelegramBotGrupo2.dtos.PdIDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -50,6 +51,15 @@ public class FuenteProxy {
         } catch (Exception e) {
             e.printStackTrace();
             return  new ArrayList<>();
+        }
+    }
+
+    public HechoDTO postPdI(String hechoId, PdIDTO pdi) {
+        try {
+            return retrofitClient.postPdI(hechoId, pdi).execute().body();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
