@@ -26,5 +26,5 @@ public interface FuenteRetrofitClient {
     Call<HechoDTO> postHecho(@Body HechoDTO hecho);
 
     @POST(value = "/hechos/{idHecho}/pdis")
-    Call<HechoDTO> postPdI(@Path("idHecho") String idHecho, @Body PdIDTO pdi);
+    Call<PdIDTO> postPdI(@Path("idHecho") String idHecho, @Body PdIDTO pdi);
 }

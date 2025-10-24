@@ -54,7 +54,7 @@ public class FuenteProxy {
         }
     }
 
-    public HechoDTO postPdI(String hechoId, PdIDTO pdi) {
+    public PdIDTO postPdI(String hechoId, PdIDTO pdi) {
         try {
             return retrofitClient.postPdI(hechoId, pdi).execute().body();
         } catch (Exception e) {

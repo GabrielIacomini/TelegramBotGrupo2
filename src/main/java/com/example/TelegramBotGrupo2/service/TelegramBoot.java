@@ -26,6 +26,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -127,33 +128,35 @@ public class TelegramBoot extends TelegramLongPollingBot {
                         var hechoRetornado = fuente.postHecho(nuevoHecho);
                         if (hechoRetornado == null) {
                             enviarMensaje(chatId, "❌ Ocurrió un error dando de alta el hecho");
+                            enviarListaDeComandos(chatId);
                         } else {
                             enviarMensaje(chatId, "➕ Dado de alta el hecho:\n\n" + hechoAString(hechoRetornado));
                         }
                     } catch (Exception e) {
                         enviarMensaje(chatId, "❌ Ocurrió un error dando de alta el hecho");
+                        enviarListaDeComandos(chatId);
                         e.printStackTrace();
                     }
                     break;
 
                 case "/agregarpdihecho":
-                    enviarMensaje(chatId, "📍 Agregá un PDI (Punto de Interés) a un hecho.\n\nEjemplo:\n`/agregarpdihecho <id_hecho> <descripcion>" +
-                            "<lugar> <momento> <contenido> <url>`");
                     String hechoId3 = partes[1];
-                    String descripcion = partes[2];//agregar logica para recibir una frase
+                    String descripcion = partes[2];
                     String lugar = partes[3];
                     String momento = partes[4];
-                    String contenido = partes[5];
-                    String url = partes[6];
-                    PdIDTO nuevoPDI = new PdIDTO(null, hechoId3, descripcion, lugar, momento, contenido, url, null);
+                    String url = partes[5];
+
+                    PdIDTO nuevoPDI = new PdIDTO(null, hechoId3, descripcion, lugar, LocalDateTime.parse(momento), "", url, null);
+
                     var apiFuente = fuenteProxy(objectMapper);
                     var pdiCreado = apiFuente.postPdI(hechoId3, nuevoPDI);
 
                     if (pdiCreado == null) {
                         enviarMensaje(chatId, "❌ Ocurrió un error dando de alta el PdI");
+                        enviarListaDeComandos(chatId);
                     } else {
-                        enviarMensaje(chatId, "➕ Dada de alta el PdI");
-                        //enviarMensaje(chatId, "➕ Dada de alta el PdI:\n\n" + solicitudAString(pdiCreado));
+                        enviarMensaje(chatId, "➕ Dada de alta el PdI:\n\n" + pdiAString(pdiCreado));
+                        enviarListaDeComandos(chatId);
                     }
                     break;
 
@@ -167,18 +170,23 @@ public class TelegramBoot extends TelegramLongPollingBot {
                     EstadoSolicitudBorradoEnum estadoEnum = stringAEstadoSolicitud(estadoString);
                     if (estadoEnum == null) {
                         enviarMensaje(chatId, "❌ Estado invalido: " + estadoString);
+                        enviarMensaje(chatId, "❗ Ingresa un estado válido y asegurate de que este en mayúsculas");
                         return;
                     }
+
                     SolicitudDto nuevaSolicitud = new SolicitudDto(null, desc, estadoEnum, hechoId2);
+
                     var api = solicitudProxy(objectMapper);
                     var solicitudCreada = api.postSolicitud(nuevaSolicitud);
+
                     if (solicitudCreada == null) {
                         enviarMensaje(chatId, "❌ Ocurrió un error dando de alta el hecho");
+                        enviarListaDeComandos(chatId);
                     } else {
                         enviarMensaje(chatId, "➕ Dada de alta la solicitud:\n\n" + solicitudAString(solicitudCreada));
+                        enviarListaDeComandos(chatId);
                     }
 
-                    //enviarMensaje(chatId, "🗑️ Crea una solicitud de borrado de un hecho o elemento.\n\nEjemplo:\n`/solicitudborrado <id_hecho>`");
                     break;
 
                 case "/cambiarestadosolicitud":
@@ -188,6 +196,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
                         EstadoSolicitudBorradoEnum nuevoEstadoEnum = stringAEstadoSolicitud(nuevoEstado);
                         if (nuevoEstadoEnum == null) {
                             enviarMensaje(chatId, "❌ Estado invalido: " + nuevoEstado);
+                            enviarMensaje(chatId, "❗ Ingresa un estado válido y asegurate de que este en mayúsculas");
                             return;
                         }
 
@@ -195,21 +204,29 @@ public class TelegramBoot extends TelegramLongPollingBot {
 
                         var solicitud = solicitudes.getSolicitud(Integer.parseInt(solicitudId));
                         if (solicitud == null) {
-                            enviarMensaje(chatId, "❌ Ocurrió un error cambiando el estado de la solicitud");
+                            enviarMensaje(chatId, "❌ Ocurrió un error buscando la solicitud");
+                            enviarListaDeComandos(chatId);
                             return;
                         }
+
                         solicitud.setEstado(nuevoEstadoEnum);
                         var retorno = solicitudes.patchSolicitud(solicitud);
+
                         if (retorno == null) {
                             enviarMensaje(chatId, "❌ Ocurrió un error cambiando el estado de la solicitud");
+                            enviarListaDeComandos(chatId);
                             return;
                         }
+
                         enviarMensaje(chatId, "✅ Se cambio el estado de la solicitud "+solicitudId+ " a "+nuevoEstado);
+                        enviarListaDeComandos(chatId);
+
                     } catch (Exception e) {
-                        enviarMensaje(chatId, "❌ Ocurrió un error cambiando el estado de la solicitud");
+                        enviarMensaje(chatId, "❌ Ocurrió un error critico cambiando el estado de la solicitud");
+                        enviarListaDeComandos(chatId);
                         e.printStackTrace();
                     }
-                    //enviarMensaje(chatId, "⚙️ Permite cambiar el estado de una solicitud de borrado.\n\nEjemplo:\n`/cambiarestadosolicitud <id_solicitud> <nuevo_estado>`");
+
                     break;
 
                 default:
@@ -315,19 +332,37 @@ public class TelegramBoot extends TelegramLongPollingBot {
 
     private void enviarListaDeComandos(Long chatId) {
         String comandos = """
-                📜 *Comandos disponibles:*
-                /hechoscoleccion - Se obtienen los hechos de una colección específica.
-                /hecho - Permite visualizar un hecho concreto, que incluye sus PDIs e imágenes.
-                /agregarhechofuente - Permite agregar un hecho a una fuente concreta.
-                /agregarpdihecho - Permite agregar un PDI a un hecho.
-                /solicitudborrado - Permite hacer una solicitud de borrado.
-                /cambiarestadosolicitud - Permite cambiar el estado de una solicitud de borrado.
-                """;
+            📜 <b>Comandos disponibles:</b>
+            
+            ❔ Buscá los Hechos pertenecientes a una colección específica.
+            Ejemplo:
+            <a href="tg://msg?text=/hechoscoleccion">/hechoscoleccion &lt;nombre_coleccion&gt;</a>
+            
+            👁️ Visualizá un Hecho concreto, que incluye sus PDIs e imágenes.
+            Ejemplo:
+            <a href="tg://msg?text=/hecho">/hecho &lt;id_hecho&gt;</a>
+            
+            ⚡ Agregá un Hecho a una fuente concreta.
+            Ejemplo:
+            <a href="tg://msg?text=/agregarhechofuente">/agregarhechofuente &lt;nombre_coleccion&gt; &lt;titulo&gt; &lt;etiquetas_separadas_por_coma&gt; &lt;categoria&gt; &lt;ubicacion&gt; &lt;momento&gt; &lt;origen&gt;</a>
+            
+            📍 Agregá un PDI (Punto de Interés) a un hecho.
+            Ejemplo:
+            <a href="tg://msg?text=/agregarpdihecho">/agregarpdihecho &lt;id_hecho&gt; &lt;descripcion&gt; &lt;lugar&gt; &lt;momento&gt; &lt;url&gt;</a>
+            
+            🗑️ Permite hacer una solicitud de borrado.
+            Ejemplo:
+            <a href="tg://msg?text=/solicitudborrado">/solicitudborrado &lt;id_hecho&gt; &lt;ESTADO&gt; &lt;descripcion&gt;</a>
+            
+            🔀 Permite cambiar el estado de una solicitud de borrado.
+            Ejemplo:
+            <a href="tg://msg?text=/cambiarestadosolicitud">/cambiarestadosolicitud &lt;id_solicitud&gt; &lt;NUEVO_ESTADO&gt;</a>
+            """;
 
         SendMessage message = SendMessage.builder()
                 .chatId(chatId.toString())
                 .text(comandos)
-                .parseMode("Markdown")
+                .parseMode("HTML")
                 .build();
 
         try {
