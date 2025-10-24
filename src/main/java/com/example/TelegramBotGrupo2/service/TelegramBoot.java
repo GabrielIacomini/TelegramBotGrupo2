@@ -155,7 +155,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
                         enviarMensaje(chatId, "❌ Ocurrió un error dando de alta el PdI");
                         enviarListaDeComandos(chatId);
                     } else {
-                        enviarMensaje(chatId, "➕ Dada de alta el PdI:\n\n" + pdiAString(pdiCreado));
+                        enviarMensaje(chatId, "➕ Dado de alta el PdI:\n\n" + pdiAString(pdiCreado));
                         enviarListaDeComandos(chatId);
                     }
                     break;
