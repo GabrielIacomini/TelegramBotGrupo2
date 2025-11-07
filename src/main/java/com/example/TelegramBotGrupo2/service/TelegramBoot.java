@@ -61,6 +61,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
         registry.register(new AgregarPdiHechoCommand(this, mapper));
         registry.register(new CambiarEstadoSolicitudCommand(this, mapper));
         registry.register(new SolicitudBorradoCommand(this, mapper));
+        registry.register(new CambiarConsensoCommand(this, mapper));
     }
 
     @Override

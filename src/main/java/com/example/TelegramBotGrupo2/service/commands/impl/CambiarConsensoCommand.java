@@ -25,10 +25,10 @@ public class CambiarConsensoCommand implements CommandAction {
         String messageText = update.getMessage().getText();
         List<String> partes = List.of(messageText.split("\\s+"));
 
-        String nombreColeccion = partes.get(1);
-        String nuevoConsenso = partes.get(2);
+        String nuevoConsenso = partes.get(1);
+        String nombreColeccion = partes.get(2);
 
-        if (!nuevoConsenso.equals("TODOS") && !nuevoConsenso.equals("AL_MENOS_DOS") && !nuevoConsenso.equals("ESTRICTO")) {
+        if (!nuevoConsenso.equals("TODOS") && !nuevoConsenso.equals("AL_MENOS_2") && !nuevoConsenso.equals("ESTRICTO")) {
             bot.enviarMensaje(chatId, "❌ Consenso inválido: " + nuevoConsenso);
             bot.enviarMensaje(chatId, "❗ Ingresa un consenso válido y asegurate de que esté en mayúsculas");
             return;
