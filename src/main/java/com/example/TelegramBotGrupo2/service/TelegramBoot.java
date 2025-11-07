@@ -51,6 +51,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
         registry.register(new CambiarEstadoSolicitudCommand(this, mapper));
         registry.register(new SolicitudBorradoCommand(this, mapper));
         registry.register(new CambiarConsensoCommand(this, mapper));
+        registry.register(new BusquedaHechosCommand(this, mapper));
     }
 
     @Override
@@ -123,6 +124,10 @@ public class TelegramBoot extends TelegramLongPollingBot {
             🔀 Permite cambiar el consenso de una coleccion.
             Ejemplo:
             <a href="tg://msg?text=/cambiarconsenso">/cambiarconsenso &lt;NUEVO_CONSENSO&gt; &lt;nombre_coleccion&gt;</a>
+            
+            🔍 <b>Buscar hechos por palabras clave y tags</b>
+            Ejemplo:
+            <a href="tg://msg?text=/buscarhechos ">/buscarhechos &lt;palabras_clave&gt; [tag:&lt;tag1&gt; tag:&lt;tag2&gt; ...]</a>
             """;
 
         SendMessage message = SendMessage.builder()
@@ -202,7 +207,8 @@ public class TelegramBoot extends TelegramLongPollingBot {
                     new BotCommand("agregarpdihecho", "Permite agregar un PDI a un hecho"),
                     new BotCommand("solicitudborrado", "Permite hacer una solicitud de borrado"),
                     new BotCommand("cambiarestadosolicitud", "Permite cambiar el estado de una solicitud de borrado"),
-                    new BotCommand("cambiarconsenso", "Permite cambiar el consenso del agregador")
+                    new BotCommand("cambiarconsenso", "Permite cambiar el consenso del agregador"),
+                    new BotCommand("buscarhechos", "Permite buscar hechos por una o mas palabras claves, y por tag")
             ));
             setMyCommands.setScope(new BotCommandScopeDefault());
 
