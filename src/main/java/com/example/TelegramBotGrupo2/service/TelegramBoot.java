@@ -1,9 +1,6 @@
 package com.example.TelegramBotGrupo2.service;
 
-import com.example.TelegramBotGrupo2.Enums.EstadoSolicitudBorradoEnum;
-import com.example.TelegramBotGrupo2.clients.AgregadorProxy;
 import com.example.TelegramBotGrupo2.clients.SolicitudProxy;
-import com.example.TelegramBotGrupo2.dtos.SolicitudDto;
 import com.example.TelegramBotGrupo2.service.commands.CommandAction;
 import com.example.TelegramBotGrupo2.service.commands.CommandRegistry;
 import com.example.TelegramBotGrupo2.service.commands.impl.*;
@@ -13,8 +10,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.example.TelegramBotGrupo2.clients.FuenteProxy;
 import com.example.TelegramBotGrupo2.clients.ProcesadorPdiProxy;
-import com.example.TelegramBotGrupo2.dtos.HechoDTO;
-import com.example.TelegramBotGrupo2.dtos.PdIDTO;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -23,16 +18,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-
-import static com.example.TelegramBotGrupo2.service.utils.MessageFormatter.*;
 
 @Component
 public class TelegramBoot extends TelegramLongPollingBot {
@@ -55,7 +44,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
 
     private void registrarComandos() {
         registry.register(new StartCommandAction(this));
-        registry.register(new HechosColeccionCommandAction(this, mapper));
+        registry.register(new HechosColeccionCommand(this, mapper));
         registry.register(new HechoCommand(this, mapper));
         registry.register(new AgregarHechoFuenteCommand(this, mapper));
         registry.register(new AgregarPdiHechoCommand(this, mapper));
@@ -68,15 +57,17 @@ public class TelegramBoot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
 
         if (update.hasMessage() && update.getMessage().hasText()) {
+            // comandos normales
             String text = update.getMessage().getText().split("\\s+")[0];
             CommandAction command = registry.getCommand(text);
 
             if (command != null) {
                 command.execute(update);
             } else {
-                enviarMensaje(update.getMessage().getChatId(),
-                        "❓ Comando desconocido. Usa /start para ver opciones.");
+                enviarMensaje(update.getMessage().getChatId(), "❓ Comando desconocido.");
             }
+        } else if (update.hasCallbackQuery()) {
+            manejarCallback(update);
         }
     }
 
@@ -153,6 +144,35 @@ public class TelegramBoot extends TelegramLongPollingBot {
             execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void enviarMensajeConTeclado(Long chatId, String texto, InlineKeyboardMarkup teclado) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId.toString());
+        message.setText(texto);
+        message.setParseMode("Markdown");
+        message.setReplyMarkup(teclado);
+
+        try {
+            execute(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void manejarCallback(Update update) {
+        String data = update.getCallbackQuery().getData();
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+
+        if (data.startsWith("hechos_prev_") || data.startsWith("hechos_next_")) {
+            String[] partes = data.split("_");
+            String coleccionId = partes[2];
+            int pagina = Integer.parseInt(partes[3]);
+
+            // reutilizar el mismo comando
+            HechosColeccionCommand cmd = new HechosColeccionCommand(this, mapper);
+            cmd.mostrarPagina(chatId, coleccionId, pagina);
         }
     }
 
