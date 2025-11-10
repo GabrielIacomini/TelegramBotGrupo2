@@ -1,5 +1,6 @@
 package com.example.TelegramBotGrupo2.clients;
 
+import com.example.TelegramBotGrupo2.dtos.BusquedaReqDTO;
 import com.example.TelegramBotGrupo2.dtos.ConsensoDTO;
 import com.example.TelegramBotGrupo2.dtos.HechoDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,14 @@ public class AgregadorProxy {
     public Void cambiarConsenso(ConsensoDTO consensoDTO) {
         try {
             return agregadorRetrofitClient.cambiarConsenso(consensoDTO).execute().body();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<HechoDTO> buscarHechosPorPalabrasClaves(BusquedaReqDTO busquedaDto) {
+        try {
+            return agregadorRetrofitClient.buscarHechosPorPalabras(busquedaDto).execute().body();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

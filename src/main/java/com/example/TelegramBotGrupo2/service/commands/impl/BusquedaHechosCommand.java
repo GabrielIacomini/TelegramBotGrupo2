@@ -1,20 +1,26 @@
 package com.example.TelegramBotGrupo2.service.commands.impl;
 
+import com.example.TelegramBotGrupo2.clients.AgregadorProxy;
+import com.example.TelegramBotGrupo2.dtos.BusquedaReqDTO;
+import com.example.TelegramBotGrupo2.dtos.HechoDTO;
 import com.example.TelegramBotGrupo2.service.TelegramBoot;
 import com.example.TelegramBotGrupo2.service.commands.CommandAction;
+import com.example.TelegramBotGrupo2.service.utils.PaginatorFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class BusquedaHechosCommand implements CommandAction {
 
-    private final TelegramBoot bot;
+    private static TelegramBoot bot;
     private final ObjectMapper mapper;
 
     public BusquedaHechosCommand(TelegramBoot bot, ObjectMapper mapper) {
-        this.bot = bot;
+        BusquedaHechosCommand.bot = bot;
         this.mapper = mapper;
     }
 
@@ -52,6 +58,22 @@ public class BusquedaHechosCommand implements CommandAction {
                         "🗝️ Palabras clave: " + String.join(", ", keywords) + "\n" +
                         "🏷️ Tags: " + (tags.isEmpty() ? "ninguno" : String.join(", ", tags))
         );
+
+        BusquedaReqDTO busquedaReqDTO = new BusquedaReqDTO();
+
+        try {
+            AgregadorProxy agregador = new AgregadorProxy("https://two025-tp-entrega-2-gabrieliacomini.onrender.com", mapper);
+
+            busquedaReqDTO.setTerminos(Arrays.stream(partes).toList());
+            busquedaReqDTO.setPageSize(Optional.of(3));
+            busquedaReqDTO.setPageIdx(Optional.of(0));
+
+            List<HechoDTO> busquedaHechosRes = agregador.buscarHechosPorPalabrasClaves(busquedaReqDTO);
+
+            PaginatorFormatter.mostrarPagina(chatId, "", 0, busquedaHechosRes);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

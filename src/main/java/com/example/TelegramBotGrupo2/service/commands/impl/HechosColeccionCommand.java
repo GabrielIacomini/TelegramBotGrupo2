@@ -14,14 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.TelegramBotGrupo2.service.utils.PaginatorFormatter.mostrarPagina;
+
 public class HechosColeccionCommand implements CommandAction {
 
-    private final TelegramBoot bot;
+    private static TelegramBoot bot;
     private final ObjectMapper mapper;
-    private static final int PAGE_SIZE = 5;
 
     public HechosColeccionCommand(TelegramBoot bot, ObjectMapper mapper) {
-        this.bot = bot;
+        HechosColeccionCommand.bot = bot;
         this.mapper = mapper;
     }
 
@@ -36,70 +37,18 @@ public class HechosColeccionCommand implements CommandAction {
         }
 
         String coleccionId = partes[1];
-        mostrarPagina(chatId, coleccionId, 0);
-
-    }
-
-    public void mostrarPagina(Long chatId, String coleccionId, int page) {
-        AgregadorProxy agregador = new AgregadorProxy("https://two025-tp-entrega-2-gabrieliacomini.onrender.com", mapper);
 
         try {
+            AgregadorProxy agregador = new AgregadorProxy("https://two025-tp-entrega-2-gabrieliacomini.onrender.com", mapper);
+
             List<HechoDTO> hechos = agregador.getHechos(coleccionId);
 
-            if (hechos.isEmpty()) {
-                bot.enviarMensaje(chatId, "📭 No se encontraron hechos para la colección `" + coleccionId + "`");
-                return;
-            }
-
-            int start = page * PAGE_SIZE;
-            int end = Math.min(start + PAGE_SIZE, hechos.size());
-            List<HechoDTO> sublist = hechos.subList(start, end);
-
-            String texto = sublist.stream()
-                    .map(h -> MessageFormatter.hechoAString(h))
-                    .collect(Collectors.joining("\n\n"));
-
-            texto += String.format("\n\n📄 Mostrando %d-%d de %d hechos.",
-                    start + 1, end, hechos.size());
-
-            InlineKeyboardMarkup keyboard = crearBotonesPaginado(coleccionId, page, hechos.size());
-
-            bot.enviarMensajeConTeclado(chatId, texto, keyboard);
-            bot.enviarListaDeComandos(chatId);
-
+            mostrarPagina(chatId, coleccionId, 0, hechos);
         } catch (Exception e) {
             bot.enviarMensaje(chatId, "❌ Error al obtener hechos de la colección");
             bot.enviarListaDeComandos(chatId);
         }
-    }
 
-    private InlineKeyboardMarkup crearBotonesPaginado(String coleccionId, int page, int total) {
-        List<List<InlineKeyboardButton>> filas = new ArrayList<>();
-        List<InlineKeyboardButton> botones = new ArrayList<>();
-
-        int totalPages = (int) Math.ceil(total / (double) PAGE_SIZE);
-
-        if (page > 0) {
-            InlineKeyboardButton prev = new InlineKeyboardButton();
-            prev.setText("◀️ Anterior");
-            prev.setCallbackData("hechos_prev_" + coleccionId + "_" + (page - 1));
-            botones.add(prev);
-        }
-
-        if (page < totalPages - 1) {
-            InlineKeyboardButton next = new InlineKeyboardButton();
-            next.setText("Siguiente ▶️");
-            next.setCallbackData("hechos_next_" + coleccionId + "_" + (page + 1));
-            botones.add(next);
-        }
-
-        if (!botones.isEmpty()) {
-            filas.add(botones);
-        }
-
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        markup.setKeyboard(filas);
-        return markup;
     }
 
     @Override
