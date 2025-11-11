@@ -1,6 +1,7 @@
 package com.example.TelegramBotGrupo2.clients;
 
 import com.example.TelegramBotGrupo2.dtos.BusquedaReqDTO;
+import com.example.TelegramBotGrupo2.dtos.BusquedaResDto;
 import com.example.TelegramBotGrupo2.dtos.ConsensoDTO;
 import com.example.TelegramBotGrupo2.dtos.HechoDTO;
 import retrofit2.Call;
@@ -16,6 +17,6 @@ public interface AgregadorRetrofitClient {
     @PUT(value = "/consenso")
     Call<Void> cambiarConsenso(@Body ConsensoDTO consensoDTO);
 
-    @POST(value = "/hechos")
-    Call<List<HechoDTO>> buscarHechosPorPalabras(@Body BusquedaReqDTO busquedaDto);
+    @POST(value = "/hechos/search")
+    Call<BusquedaResDto> buscarHechosPorPalabras(@Body BusquedaReqDTO busquedaDto);
 }

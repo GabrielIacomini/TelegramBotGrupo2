@@ -68,9 +68,10 @@ public class BusquedaHechosCommand implements CommandAction {
             busquedaReqDTO.setPageSize(Optional.of(3));
             busquedaReqDTO.setPageIdx(Optional.of(0));
 
-            List<HechoDTO> busquedaHechosRes = agregador.buscarHechosPorPalabrasClaves(busquedaReqDTO);
+            var busquedaHechosRes = agregador.buscarHechosPorPalabrasClaves(busquedaReqDTO);
+            var total = busquedaHechosRes.total;
 
-            PaginatorFormatter.mostrarPagina(chatId, "", 0, busquedaHechosRes);
+            PaginatorFormatter.mostrarPagina(chatId, "", 0, busquedaHechosRes.hechos);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
