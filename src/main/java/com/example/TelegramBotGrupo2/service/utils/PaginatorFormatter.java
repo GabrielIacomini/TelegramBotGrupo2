@@ -14,16 +14,15 @@ import java.util.stream.Collectors;
 public class PaginatorFormatter {
 
     private static final int PAGE_SIZE = 5;
-    private static TelegramBoot bot = null;
+    private final TelegramBoot bot;
 
     public PaginatorFormatter(TelegramBoot bot) {
-        PaginatorFormatter.bot = bot;
+        this.bot = bot;
     }
 
-    public static void mostrarPagina(Long chatId, String coleccionId, int page, List<HechoDTO> hechos) {
-
+    public void mostrarPagina(Long chatId, String tipo, String contexto, int page, List<HechoDTO> hechos) {
         if (hechos.isEmpty()) {
-            bot.enviarMensaje(chatId, "📭 No se encontraron hechos `");
+            bot.enviarMensaje(chatId, "📭 No se encontraron hechos.");
             return;
         }
 
@@ -32,46 +31,40 @@ public class PaginatorFormatter {
         List<HechoDTO> sublist = hechos.subList(start, end);
 
         String texto = sublist.stream()
-                .map(h -> MessageFormatter.hechoAString(h))
+                .map(MessageFormatter::hechoAString)
                 .collect(Collectors.joining("\n\n"));
 
         texto += String.format("\n\n📄 Mostrando %d-%d de %d hechos.",
                 start + 1, end, hechos.size());
 
-        InlineKeyboardMarkup keyboard = crearBotonesPaginado(coleccionId, page, hechos.size());
+        InlineKeyboardMarkup keyboard = crearBotonesPaginado(tipo, contexto, page, hechos.size());
 
         bot.enviarMensajeConTeclado(chatId, texto, keyboard);
-        bot.enviarListaDeComandos(chatId);
-
     }
 
-    private static InlineKeyboardMarkup crearBotonesPaginado(String coleccionId, int page, int total) {
+    private static InlineKeyboardMarkup crearBotonesPaginado(String tipo, String contexto, int page, int total) {
         List<List<InlineKeyboardButton>> filas = new ArrayList<>();
         List<InlineKeyboardButton> botones = new ArrayList<>();
-
         int totalPages = (int) Math.ceil(total / (double) PAGE_SIZE);
 
         if (page > 0) {
             InlineKeyboardButton prev = new InlineKeyboardButton();
             prev.setText("◀️ Anterior");
-            prev.setCallbackData("hechos_prev_" + coleccionId + "_" + (page - 1));
+            prev.setCallbackData(tipo + "_prev_" + contexto + "_" + (page - 1));
             botones.add(prev);
         }
 
         if (page < totalPages - 1) {
             InlineKeyboardButton next = new InlineKeyboardButton();
             next.setText("Siguiente ▶️");
-            next.setCallbackData("hechos_next_" + coleccionId + "_" + (page + 1));
+            next.setCallbackData(tipo + "_next_" + contexto + "_" + (page + 1));
             botones.add(next);
         }
 
-        if (!botones.isEmpty()) {
-            filas.add(botones);
-        }
+        if (!botones.isEmpty()) filas.add(botones);
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         markup.setKeyboard(filas);
         return markup;
     }
-
 }

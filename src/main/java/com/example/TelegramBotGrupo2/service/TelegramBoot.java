@@ -1,9 +1,13 @@
 package com.example.TelegramBotGrupo2.service;
 
+import com.example.TelegramBotGrupo2.clients.AgregadorProxy;
 import com.example.TelegramBotGrupo2.clients.SolicitudProxy;
+import com.example.TelegramBotGrupo2.dtos.BusquedaReqDTO;
+import com.example.TelegramBotGrupo2.dtos.HechoDTO;
 import com.example.TelegramBotGrupo2.service.commands.CommandAction;
 import com.example.TelegramBotGrupo2.service.commands.CommandRegistry;
 import com.example.TelegramBotGrupo2.service.commands.impl.*;
+import com.example.TelegramBotGrupo2.service.utils.PaginatorFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -21,7 +25,9 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class TelegramBoot extends TelegramLongPollingBot {
@@ -170,14 +176,28 @@ public class TelegramBoot extends TelegramLongPollingBot {
         String data = update.getCallbackQuery().getData();
         Long chatId = update.getCallbackQuery().getMessage().getChatId();
 
-        if (data.startsWith("hechos_prev_") || data.startsWith("hechos_next_")) {
-            String[] partes = data.split("_");
-            String coleccionId = partes[2];
-            int pagina = Integer.parseInt(partes[3]);
+        String[] partes = data.split("_", 4);
+        String tipo = partes[0];      // "hechos" o "buscar"
+        String contexto = partes[2];  // coleccionId o hash de búsqueda
+        int pagina = Integer.parseInt(partes[3]);
 
-            // reutilizar el mismo comando
-            HechosColeccionCommand cmd = new HechosColeccionCommand(this, mapper);
-            cmd.mostrarPagina(chatId, coleccionId, pagina);
+        AgregadorProxy agregador = new AgregadorProxy("https://two025-tp-entrega-2-gabrieliacomini.onrender.com", mapper);
+
+        switch (tipo) {
+            case "hechos":
+                List<HechoDTO> hechos = agregador.getHechos(contexto);
+
+                new PaginatorFormatter(this).mostrarPagina(chatId, "hechos", contexto, pagina, hechos);
+                break;
+            case "buscar":
+                BusquedaReqDTO req = new BusquedaReqDTO();
+                req.setTerminos(Arrays.asList(contexto.split("\\s+")));
+                req.setPageIdx(Optional.of(pagina));
+                req.setPageSize(Optional.of(3));
+
+                var resp = agregador.buscarHechosPorPalabrasClaves(req);
+
+                new PaginatorFormatter(this).mostrarPagina(chatId, "buscar", contexto, pagina, resp.hechos);
         }
     }
 
