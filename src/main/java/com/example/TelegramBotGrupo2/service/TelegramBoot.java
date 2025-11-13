@@ -192,8 +192,8 @@ public class TelegramBoot extends TelegramLongPollingBot {
             case "buscar":
                 BusquedaReqDTO req = new BusquedaReqDTO();
                 req.setTerminos(Arrays.asList(contexto.split("\\s+")));
-                req.setPageIdx(Optional.of(pagina));
-                req.setPageSize(Optional.of(3));
+                req.setPageIdx(pagina);
+                req.setPageSize(3);
 
                 var resp = agregador.buscarHechosPorPalabrasClaves(req);
 

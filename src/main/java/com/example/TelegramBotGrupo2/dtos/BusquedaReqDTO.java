@@ -12,6 +12,6 @@ import java.util.Optional;
 @NoArgsConstructor
 public class BusquedaReqDTO {
     private List<String> terminos;
-    private Optional<Integer> pageIdx;
-    private Optional<Integer> pageSize;
+    private Integer pageIdx;
+    private Integer pageSize;
 }

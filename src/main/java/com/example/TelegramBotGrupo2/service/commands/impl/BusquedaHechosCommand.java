@@ -55,8 +55,8 @@ public class BusquedaHechosCommand implements CommandAction {
             AgregadorProxy agregador = new AgregadorProxy("https://two025-tp-entrega-2-gabrieliacomini.onrender.com", mapper);
             BusquedaReqDTO req = new BusquedaReqDTO();
             req.setTerminos(keywords);
-            req.setPageIdx(Optional.of(0));
-            req.setPageSize(Optional.of(3));
+            req.setPageIdx(0);
+            req.setPageSize(3);
 
             var resp = agregador.buscarHechosPorPalabrasClaves(req);
 
