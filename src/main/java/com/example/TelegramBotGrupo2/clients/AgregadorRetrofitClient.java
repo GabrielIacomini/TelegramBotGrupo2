@@ -14,7 +14,7 @@ public interface AgregadorRetrofitClient {
     @GET(value = "/coleccion/{nombreColeccion}/hechos")
     Call<List<HechoDTO>> getHechosDeColeccion(@Path("nombreColeccion") String nombreColeccion);
 
-    @PUT(value = "/consenso")
+    @PATCH(value = "/consenso")
     Call<Void> cambiarConsenso(@Body ConsensoDTO consensoDTO);
 
     @POST(value = "/hechos/search")

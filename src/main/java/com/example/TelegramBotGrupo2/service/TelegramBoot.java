@@ -133,7 +133,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
             
             🔍 <b>Buscar hechos por palabras clave y tags</b>
             Ejemplo:
-            <a href="tg://msg?text=/buscarhechos ">/buscarhechos &lt;palabras_clave&gt; [tag:&lt;tag1&gt; tag:&lt;tag2&gt; ...]</a>
+            <a href="tg://msg?text=/buscarhechos ">/buscarhechos &lt;palabras_clave&gt;</a>
             """;
 
         SendMessage message = SendMessage.builder()
