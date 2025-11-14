@@ -16,9 +16,9 @@ public class MessageFormatter {
     public static String solicitudAString(SolicitudDto h) {
         return String.format("""
                                             🆔 %s
-                                            🪪 %s
-                                            📘 %s
-                                            🟢 %s
+                                            🪪 ID Hecho:%s
+                                            📘 Descripcion: %s
+                                            🟢 Estado: %s
                                             """,
                 h.getId(),
                 h.getHechoId(),
@@ -32,7 +32,7 @@ public class MessageFormatter {
                                             📘 Titulo: %s
                                             🆔 %s
                                             📍 Ubicacion: %s
-                                            📅 Fecha %s
+                                            📅 Fecha: %s
                                             🏷️ Categoría: %s
                                             🔖 Etiquetas: %s
                                             🌐 Origen: %s

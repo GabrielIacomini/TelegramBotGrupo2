@@ -187,7 +187,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
             case "hechos":
                 List<HechoDTO> hechos = agregador.getHechos(contexto);
 
-                new PaginatorFormatter(this).mostrarPagina(chatId, "hechos", contexto, pagina, hechos);
+                new PaginatorFormatter(this).mostrarPagina(chatId, "hechos", contexto, pagina, hechos, hechos.size());
                 break;
             case "buscar":
                 BusquedaReqDTO req = new BusquedaReqDTO();
@@ -197,7 +197,7 @@ public class TelegramBoot extends TelegramLongPollingBot {
 
                 var resp = agregador.buscarHechosPorPalabrasClaves(req);
 
-                new PaginatorFormatter(this).mostrarPagina(chatId, "buscar", contexto, pagina, resp.hechos);
+                new PaginatorFormatter(this).mostrarPagina(chatId, "buscar", contexto, pagina, resp.hechos, resp.total);
         }
     }
 

@@ -36,7 +36,7 @@ public class HechosColeccionCommand implements CommandAction {
             AgregadorProxy agregador = new AgregadorProxy("https://two025-tp-entrega-2-gabrieliacomini.onrender.com", mapper);
             List<HechoDTO> hechos = agregador.getHechos(coleccionId);
 
-            new PaginatorFormatter(bot).mostrarPagina(chatId, "hechos", coleccionId, 0, hechos);
+            new PaginatorFormatter(bot).mostrarPagina(chatId, "hechos", coleccionId, 0, hechos, hechos.size());
         } catch (Exception e) {
             bot.enviarMensaje(chatId, "❌ Error al obtener hechos de la colección");
             bot.enviarListaDeComandos(chatId);

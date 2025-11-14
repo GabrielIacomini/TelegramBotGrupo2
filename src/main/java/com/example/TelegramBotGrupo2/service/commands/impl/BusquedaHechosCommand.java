@@ -54,7 +54,7 @@ public class BusquedaHechosCommand implements CommandAction {
 
             var resp = agregador.buscarHechosPorPalabrasClaves(req);
 
-            new PaginatorFormatter(bot).mostrarPagina(chatId, "buscar", query, 0, resp.hechos);
+            new PaginatorFormatter(bot).mostrarPagina(chatId, "buscar", query, 0, resp.hechos, resp.total);
 
         } catch (Exception e) {
             bot.enviarMensaje(chatId, "❌ Error al buscar hechos.");

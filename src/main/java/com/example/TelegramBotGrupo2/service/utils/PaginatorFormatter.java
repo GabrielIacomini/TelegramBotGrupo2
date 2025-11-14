@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 
 public class PaginatorFormatter {
 
-    private static final int PAGE_SIZE = 5;
+    private static final int PAGE_SIZE = 3;
     private final TelegramBoot bot;
 
     public PaginatorFormatter(TelegramBoot bot) {
         this.bot = bot;
     }
 
-    public void mostrarPagina(Long chatId, String tipo, String contexto, int page, List<HechoDTO> hechos) {
+    public void mostrarPagina(Long chatId, String tipo, String contexto, int page, List<HechoDTO> hechos, int total) {
         if (hechos.isEmpty()) {
             bot.enviarMensaje(chatId, "📭 No se encontraron hechos.");
             return;
@@ -28,16 +28,23 @@ public class PaginatorFormatter {
 
         int start = page * PAGE_SIZE;
         int end = Math.min(start + PAGE_SIZE, hechos.size());
-        List<HechoDTO> sublist = hechos.subList(start, end);
+        List<HechoDTO> sublist;
+        if (hechos.size() == total) {
+            sublist = hechos.subList(start, end);
+        } else {
+            end = start + hechos.size();
+            sublist = hechos;
+        }
+
 
         String texto = sublist.stream()
                 .map(MessageFormatter::hechoAString)
                 .collect(Collectors.joining("\n\n"));
 
         texto += String.format("\n\n📄 Mostrando %d-%d de %d hechos.",
-                start + 1, end, hechos.size());
+                start + 1, end, total);
 
-        InlineKeyboardMarkup keyboard = crearBotonesPaginado(tipo, contexto, page, hechos.size());
+        InlineKeyboardMarkup keyboard = crearBotonesPaginado(tipo, contexto, page, total);
 
         bot.enviarMensajeConTeclado(chatId, texto, keyboard);
     }
