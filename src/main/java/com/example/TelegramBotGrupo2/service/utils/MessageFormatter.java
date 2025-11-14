@@ -29,11 +29,12 @@ public class MessageFormatter {
 
     public static String hechoAString(HechoDTO h) {
         return String.format("""
-                                            📘 %s
+                                            📘 Titulo: %s
                                             🆔 %s
-                                            📍 %s
-                                            📅 %s
+                                            📍 Ubicacion: %s
+                                            📅 Fecha %s
                                             🏷️ Categoría: %s
+                                            🔖 Etiquetas: %s
                                             🌐 Origen: %s
                                             """,
                 h.getTitulo(),
@@ -41,6 +42,7 @@ public class MessageFormatter {
                 h.getUbicacion(),
                 h.getFecha() != null ? h.getFecha().toString().replace('T', ' ') : "Sin fecha",
                 h.getCategoria() != null ? h.getCategoria() : "Sin categoría",
+                h.getEtiquetas() != null ? h.getEtiquetas() : "Sin Etiquetas",
                 h.getOrigen() != null ? h.getOrigen() : "Sin origen"
         );
     }
@@ -48,18 +50,20 @@ public class MessageFormatter {
     public static String pdiAString(PdIDTO p) {
         return String.format("""
                                             🆔 %s
-                                            📍 %s
-                                            📘 %s
-                                            🏷️ Categoría: %s
-                                            📅 %s
-                                            🌐: %s
+                                            📍 Lugar: %s
+                                            📘 Contenido: %s
+                                            🏷️ Descripcion: %s
+                                            📅 Momento: %s
+                                            🌐 URL: %s
+                                            🔖 Etiquetas: %s
                                             """,
                 p.getId(),
                 p.getLugar(),
                 p.getContenido(),
                 p.getDescripcion(),
                 p.getMomento() != null ? p.getMomento().toString().replace('T', ' ') : "Sin fecha",
-                p.getUrlImagen()
+                p.getUrlImagen(),
+                p.getEtiquetas() != null ? p.getEtiquetas() : "Sin Etiquetas"
         );
     }
 

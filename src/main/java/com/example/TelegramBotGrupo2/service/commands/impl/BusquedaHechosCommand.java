@@ -35,20 +35,14 @@ public class BusquedaHechosCommand implements CommandAction {
         }
 
         String query = partes[1].replace(",", " ").trim();
-        String[] tokens = query.split("\\s+");
 
         List<String> keywords = new ArrayList<>();
-        List<String> tags = new ArrayList<>();
+        keywords.addAll(Arrays.asList(query.split(" ")));
 
-        for (String token : tokens) {
-            if (token.toLowerCase().startsWith("tag:")) tags.add(token.substring(4).trim());
-            else keywords.add(token.trim());
-        }
 
         bot.enviarMensaje(chatId,
                 "🔍 *Búsqueda recibida:*\n" +
-                        "🗝️ Palabras clave: " + String.join(", ", keywords) + "\n" +
-                        "🏷️ Tags: " + (tags.isEmpty() ? "ninguno" : String.join(", ", tags))
+                        "🗝️ Palabras clave: " + String.join(", ", keywords) + "\n"
         );
 
         try {
